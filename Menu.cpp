@@ -72,6 +72,14 @@ uint8_t Menu::GetButton() {
 }
 
 void Menu::Draw() {
+	if (millis() - currentButtonTime > LCD_BL_TIMEOUT) {
+		lcd.noDisplay();
+		lcd.setBacklight(0);
+	} else {
+		lcd.display();
+		lcd.setBacklight(WHITE);
+	}
+
 	if (redraw) {
 		lcd.clear();
 
@@ -94,6 +102,7 @@ void Menu::HandleNavigation() {
 
 	if (_button != currentButton) {
 		currentButton = _button;
+		currentButtonTime = millis();
 
 		switch(currentButton) {
 		case NAV_DOWN:
