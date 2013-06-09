@@ -12,7 +12,7 @@
 
 #include "MemoryFree.h"
 
-#include "MsTimer2.h"
+#include "FlexiTimer2.h"
 
 int freeRAM = 0;
 
@@ -96,8 +96,8 @@ void setup()
 
 	Usb.Init();
 
-	MsTimer2::set(1, on_timer);
-	MsTimer2::start();
+	FlexiTimer2::set(1, 1.0 / 10000, on_timer);
+	FlexiTimer2::start();
 }
 
 // The loop function is called in an endless loop

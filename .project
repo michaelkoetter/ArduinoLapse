@@ -32,14 +32,14 @@
 			<locationURI>ArduinoPivateLibPath/Adafruit_RGB_LCD_Shield_Library</locationURI>
 		</link>
 		<link>
+			<name>Libraries/FlexiTimer2</name>
+			<type>2</type>
+			<locationURI>ArduinoPivateLibPath/FlexiTimer2</locationURI>
+		</link>
+		<link>
 			<name>Libraries/MemoryFree</name>
 			<type>2</type>
 			<locationURI>ArduinoPivateLibPath/MemoryFree</locationURI>
-		</link>
-		<link>
-			<name>Libraries/MsTimer2</name>
-			<type>2</type>
-			<locationURI>ArduinoPivateLibPath/MsTimer2</locationURI>
 		</link>
 		<link>
 			<name>Libraries/PTP</name>
