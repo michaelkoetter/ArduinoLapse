@@ -5,15 +5,7 @@
 #include "avr/pgmspace.h"
 
 #include "Wire.h"
-#include "Adafruit_RGBLCDShield.h"
-
-#define RED 0x1
-#define YELLOW 0x3
-#define GREEN 0x2
-#define TEAL 0x6
-#define BLUE 0x4
-#define VIOLET 0x5
-#define WHITE 0x7
+#include "LiquidTWI2.h"
 
 #define LCD_COLS 16
 #define LCD_ROWS 2
@@ -53,7 +45,7 @@ public:
 };
 
 class Menu {
-	Adafruit_RGBLCDShield lcd;
+	LiquidTWI2 lcd;
 
 	char* 		buffer;
 

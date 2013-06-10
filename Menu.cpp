@@ -41,11 +41,14 @@ Menu::Menu(uint8_t nItems, MenuItem** items) :
 	items(items),
 	currentItem(0),
 	currentButton(NAV_NONE),
-	redraw(true)
+	redraw(true),
+	lcd(MCP23017_ADDRESS),
+	buffer(NULL)
 {
 }
 
 void Menu::Init() {
+	lcd.setMCPType(LTI_TYPE_MCP23017);
 	lcd.begin(LCD_COLS, LCD_ROWS);
 	buffer = (char*)malloc(LCD_COLS + 1);
 }
@@ -74,7 +77,7 @@ uint8_t Menu::GetButton() {
 void Menu::Draw() {
 	if (millis() - currentButtonTime > LCD_BL_TIMEOUT) {
 		lcd.noDisplay();
-		lcd.setBacklight(0);
+		lcd.setBacklight(OFF);
 	} else {
 		lcd.display();
 		lcd.setBacklight(WHITE);
