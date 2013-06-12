@@ -5,17 +5,17 @@ MenuItem::MenuItem(PGM_P label, uint8_t item_type, void* value, unsigned int ste
 {
 }
 
-void MenuItem::PrintLabel(char* buffer, byte cols) {
-	strncpy_P(buffer, label, cols);
+void MenuItem::PrintLabel(char* buffer, byte len) {
+	strncpy_P(buffer, label, len);
 }
 
-void MenuItem::PrintValue(char* buffer, byte cols) {
+void MenuItem::PrintValue(char* buffer, byte len) {
 	switch(item_type) {
 	case TYPE_INT:
-		snprintf(buffer, cols, "%i", *((int*)value));
+		snprintf(buffer, len, "%i", *((int*)value));
 		break;
 	case TYPE_UINT:
-		snprintf(buffer, cols, "%u", *((unsigned int*)value));
+		snprintf(buffer, len, "%u", *((unsigned int*)value));
 		break;
 	}
 }
@@ -42,15 +42,13 @@ Menu::Menu(uint8_t nItems, MenuItem** items) :
 	currentItem(0),
 	currentButton(NAV_NONE),
 	redraw(true),
-	lcd(MCP23017_ADDRESS),
-	buffer(NULL)
+	lcd(MCP23017_ADDRESS)
 {
 }
 
 void Menu::Init() {
 	lcd.setMCPType(LTI_TYPE_MCP23017);
 	lcd.begin(LCD_COLS, LCD_ROWS);
-	buffer = (char*)malloc(LCD_COLS + 1);
 }
 
 uint8_t Menu::GetButton() {

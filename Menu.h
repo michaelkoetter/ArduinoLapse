@@ -36,8 +36,8 @@ class MenuItem {
 
 public:
 	MenuItem(PGM_P label, byte item_type = TYPE_LABEL, void* value = NULL, unsigned int step = 1);
-	void PrintLabel(char* buffer, byte cols);
-	void PrintValue(char* buffer, byte cols);
+	void PrintLabel(char* buffer, byte len);
+	void PrintValue(char* buffer, byte len);
 
 	// navigation
 	void ChangeValue(bool increment);
@@ -47,7 +47,7 @@ public:
 class Menu {
 	LiquidTWI2 lcd;
 
-	char* 		buffer;
+	char 		buffer[LCD_COLS+1];
 
 	MenuItem	**items;
 	byte 	nItems;
