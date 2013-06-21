@@ -1,10 +1,3 @@
-/*
- * Camera.cpp
- *
- *  Created on: 10.06.2013
- *      Author: michael
- */
-
 #include "Sequence.h"
 
 Sequence::Sequence(USB *usb, TMC26XStepper *stepper)

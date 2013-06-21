@@ -1,10 +1,3 @@
-/*
- * Camera.h
- *
- *  Created on: 10.06.2013
- *      Author: michael
- */
-
 #ifndef CAMERA_H_
 #define CAMERA_H_
 

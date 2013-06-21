@@ -4,67 +4,58 @@
 #include "Arduino.h"
 #include "avr/pgmspace.h"
 
-#include "Wire.h"
+#include "Print.h"
+
 #include "LiquidTWI2.h"
 
-#define LCD_COLS 16
-#define LCD_ROWS 2
+#define LCD LiquidTWI2
 
-#define LCD_BL_TIMEOUT	5000
-
-// navigation
-#define NAV_UP		1
-#define NAV_DOWN	2
-#define NAV_LEFT	3
-#define NAV_RIGHT 	4
-#define NAV_SELECT	5
-#define NAV_NONE	0
-
-// item types
-#define TYPE_LABEL	0
-
-#define TYPE_BYTE	1
-#define TYPE_INT	2
-#define TYPE_UINT	3
-
-class MenuItem {
-	PGM_P		label;
-	byte		item_type;
-
-	void 			*value;
-	unsigned int	step;
-
+class MenuValueBase : public Printable {
 public:
-	MenuItem(PGM_P label, byte item_type = TYPE_LABEL, void* value = NULL, unsigned int step = 1);
-	void PrintLabel(char* buffer, byte len);
-	void PrintValue(char* buffer, byte len);
-
-	// navigation
-	void ChangeValue(bool increment);
-	void Select();
+	virtual void Modify(int amount) const = 0;
 };
 
-class Menu {
-	LiquidTWI2 lcd;
-
-	char 		buffer[LCD_COLS+1];
-
-	MenuItem	**items;
-	byte 	nItems;
-
-	byte 	currentItem;
-	byte	currentButton;
-	unsigned long	currentButtonTime;
-
-	bool		redraw;
-
-	byte		GetButton();
-
+template<class T>
+class MenuValue : public MenuValueBase {
 public:
-	Menu(byte nItems, MenuItem** items);
-	void 		Init();
-	void 		Draw();
-	void 		HandleNavigation();
+	MenuValue(T* value, T steps = 1)
+		: m_value(value), m_steps(steps) {}
+
+	virtual size_t printTo(Print& p) const {
+		p.print(*m_value);
+	}
+
+	virtual void Modify(int amount) const {
+		(*m_value) += (amount * m_steps);
+	}
+
+private:
+	T*	m_value;
+	T 	m_steps;
+};
+
+
+class MenuItem {
+public:
+	virtual void Render(LCD& lcd) const = 0;
+};
+
+class LabelMenuItem : public MenuItem {
+public:
+	LabelMenuItem(const __FlashStringHelper* label);
+	virtual void Render(LCD& lcd) const;
+
+private:
+	const __FlashStringHelper*	m_label;
+};
+
+class LabelValueMenuItem : public LabelMenuItem {
+public:
+	LabelValueMenuItem(const __FlashStringHelper* label, const MenuValueBase* value);
+	virtual void Render(LCD& lcd) const;
+
+private:
+	const MenuValueBase*	m_value;
 };
 
 #endif /* MENU_H_ */
