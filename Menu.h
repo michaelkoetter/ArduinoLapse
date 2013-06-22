@@ -58,4 +58,27 @@ private:
 	const MenuValueBase*	m_value;
 };
 
+
+class Menu {
+public:
+	Menu(LCD* lcd,
+		const byte cols,
+		const byte rows,
+		const MenuItem** items,
+		unsigned int nItems);
+
+	void 					Init();
+	void					Render();
+
+private:
+	const MenuItem**		m_items;
+	const unsigned int	m_nItems;
+
+	LCD*					m_lcd;
+	const byte				m_rows;
+	const byte				m_cols;
+
+	unsigned int			m_currentItem;
+};
+
 #endif /* MENU_H_ */

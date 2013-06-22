@@ -21,20 +21,13 @@ int freeRAM = 0;
 unsigned int motorSpeed =  100;
 unsigned int motorCurrent = 500;
 
-
+MenuValue<int> mv_freeRam(&freeRAM);
+MenuValue<unsigned int> mv_motorSpeed(&motorSpeed);
+MenuValue<unsigned int> mv_motorCurrent(&motorCurrent);
 
 TMC26XStepper	stepper(200,4,5,6, motorCurrent);
 USB				usb;
 Sequence		sequence(&usb, &stepper);
-
-//                                           <-------------->
-prog_char lbl_interval[] PROGMEM =			"Interval (s)";
-prog_char lbl_motorSpeed[] PROGMEM = 		"Mot.Speed (RPM)";
-prog_char lbl_motorCurrent[] PROGMEM = 		"Mot.Current (mA)";
-prog_char lbl_freeRAM[] PROGMEM =			"Free RAM (bytes)";
-
-MenuValue<unsigned int> test1(&motorSpeed);
-MenuValue<unsigned int> test2(&motorCurrent);
 
 
 void on_timer() {
@@ -47,7 +40,6 @@ void on_timer() {
 //The setup function is called once at startup of the sketch
 void setup()
 {
-	LabelValueMenuItem item1( F("Test 1") , &test1);
 	// Sparkfun USB Host Shield fix
 	pinMode(7, OUTPUT);
 	digitalWrite(7, HIGH);
