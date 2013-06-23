@@ -18,6 +18,11 @@
 #define CLOCK		(char)0x3
 #define CAMERA		(char)0x4
 
+#define TRIGGER_CABLE 0
+#define TRIGGER_PTP 1
+
+
+
 class MenuItem {
 friend class Menu;
 
@@ -107,6 +112,22 @@ protected:
 class BacklightConfigMenuItem : public ConfigMenuItem<int> {
 public:
 	BacklightConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
+			: ConfigMenuItem<int>(label, value) {};
+protected:
+	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
+};
+
+class TriggerModeConfigMenuItem : public ConfigMenuItem<int> {
+public:
+	TriggerModeConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
+			: ConfigMenuItem<int>(label, value) {};
+protected:
+	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
+};
+
+class MicrostepsConfigMenuItem : public ConfigMenuItem<int> {
+public:
+	MicrostepsConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
 			: ConfigMenuItem<int>(label, value) {};
 protected:
 	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;

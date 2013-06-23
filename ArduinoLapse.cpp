@@ -2,6 +2,7 @@
 #include "ArduinoLapse.h"
 
 #include "avr/pgmspace.h"
+#include "limits.h"
 
 #include "Config.h"
 #include "Menu.h"
@@ -14,19 +15,26 @@
 #include "ptp.h"
 
 #include "MemoryFree.h"
-
 #include "FlexiTimer2.h"
+
+#include "utils.h"
 
 #define LCD_COLS 16
 #define LCD_ROWS 2
 
 ConfigValue<int> freeRam(0);
+
+ConfigValue<int> triggerMode(0, 0, 1);
 ConfigValue<int> motorSpeed(100, 10, 400);
+ConfigValue<int> motorMicrosteps(2, 0, 8);
 ConfigValue<int> motorCurrent(1000, 100, 1200);
 ConfigValue<int> motorIdleCurrent(200, 0, 1200);
 ConfigValue<int> backlight(RED, RED, WHITE);
-ConfigValue<int> interval(10, 1, 18000);
+
+ConfigValue<int> interval(10, 1, INT_MAX - 1);
 ConfigValue<int> stabilize(2, 0, 10);
+ConfigValue<int> numShots(100, 0, INT_MAX - 1);
+ConfigValue<int> movement(1000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200,4,5,6, motorCurrent.Get());
@@ -53,7 +61,6 @@ void setup()
 
 	stepper.setSpreadCycleChopper(2,24,8,6,0);
 	stepper.setRandomOffTime(0);
-	stepper.setMicrosteps(4);
 	stepper.setStallGuardThreshold(4,0);
 	stepper.start();
 
@@ -62,10 +69,14 @@ void setup()
 
 	menu.SetIdleScreen(new LabelMenuItem(F("Idle")));
 
+	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\4 Shots"), &numShots));
+	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\4 Movement"), &movement, F(" steps")));
 	menu.AddMenuItem(new TimeConfigMenuItem		(F("\3 Interval"), &interval));
-	menu.AddMenuItem(new TimeConfigMenuItem		(F("\4 Stabilize"), &stabilize));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Motor Speed"), &motorSpeed, F(" RPM")));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Motor Current"), &motorCurrent, F(" mA")));
+	menu.AddMenuItem(new TimeConfigMenuItem		(F("\3 Stabilize"), &stabilize));
+	menu.AddMenuItem(new TriggerModeConfigMenuItem	(F("\2 Trigger Mode"), &triggerMode));
+	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Mot.Speed"), &motorSpeed, F(" RPM")));
+	menu.AddMenuItem(new MicrostepsConfigMenuItem	(F("\2 Mot.Microsteps"), &motorMicrosteps));
+	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Mot.Current"), &motorCurrent, F(" mA")));
 	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 M.Idle Current"), &motorIdleCurrent, F(" mA")));
 	menu.AddMenuItem(new BacklightConfigMenuItem	(F("\2 Backlight"), &backlight));
 	menu.AddMenuItem(new ConfigMenuItem<int>	(F("i Free RAM"), &freeRam));
@@ -89,6 +100,7 @@ void loop()
 {
 	freeRam.Set(freeMemory());
 
+	stepper.setMicrosteps(ipow(2, motorMicrosteps.Get()));
 	stepper.setCurrent(motorCurrent.Get());
 	stepper.setSpeed(motorSpeed.Get());
 

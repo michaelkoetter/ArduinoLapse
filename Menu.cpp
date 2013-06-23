@@ -1,6 +1,8 @@
 #include "Menu.h"
 #include "avr/pgmspace.h"
 
+#include "utils.h"
+
 PROGMEM prog_char arrowLeft[8] = {
 	B00000,
 	B00010,
@@ -132,6 +134,23 @@ void BacklightConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const 
 	default:
 		Pad(lcd, cols, lcd.print(F("Unknown")));
 	}
+}
+
+void TriggerModeConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
+	switch(m_value->Get()) {
+	case TRIGGER_CABLE:
+		Pad(lcd, cols, lcd.print(F("Cbl. Release")));
+		break;
+	case TRIGGER_PTP:
+		Pad(lcd, cols, lcd.print(F("USB/PTP")));
+		break;
+	default:
+		Pad(lcd, cols, lcd.print(F("Unknown")));
+	}
+}
+
+void MicrostepsConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
+	Pad(lcd, cols, lcd.print(ipow(2, m_value->Get())));
 }
 
 Menu::Menu(LCD* lcd,
