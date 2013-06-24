@@ -3,34 +3,39 @@
 
 #include "Print.h"
 
-template<class T>
+#define TRIGGER_CABLE 0
+#define TRIGGER_PTP 1
+
+typedef int (*PrintFunction) (int& value, Print& print);
+
+int PrintTime(int& value, Print& print);
+int PrintBacklightColor(int& value, Print& print);
+int PrintTriggerMode(int& value, Print& print);
+int PrintMicrosteps(int& value, Print& print);
+int PrintCurrent(int& value, Print& print);
+
 class ConfigValue {
 public:
-	ConfigValue(T defaultValue, T min = 0, T max = 0)
-		: m_value(defaultValue), m_min(min), m_max(max) {}
+	ConfigValue(int defaultValue, int min = 0, int max = 0, PrintFunction print = NULL)
+		: m_value(defaultValue), m_min(min), m_max(max), m_print(print) {}
 
-	virtual void Modify(T amount) {
-		T temp = m_value + amount;
-		if (temp < m_min) temp = m_min;
-		if (m_max != 0 && temp > m_max) temp = m_max;
-		m_value = temp;
-	}
+	void Modify(int amount);
 
-	T Get() const { return m_value; }
-	void Set(T value) { m_value = value; Modify(0); }
+	int PrintValue(Print& print);
 
-	T GetMin() const { return m_min; }
-	void SetMin(T min) { m_min = min; Modify(0); }
+	int Get() const { return m_value; }
+	void Set(int value) { m_value = value; Modify(0); }
 
-	T GetMax() const { return m_max; }
-	void SetMax(T max) { m_max = max; Modify(0); }
+	int GetMin() const { return m_min; }
+	void SetMin(int min) { m_min = min; Modify(0); }
+
+	int GetMax() const { return m_max; }
+	void SetMax(int max) { m_max = max; Modify(0); }
 
 protected:
-	T	m_value;
-	T 	m_min, m_max;
-};
-
-class Config {
+	int		m_value;
+	int		m_min, m_max;
+	PrintFunction	m_print;
 };
 
 #endif /* CONFIG_H_ */

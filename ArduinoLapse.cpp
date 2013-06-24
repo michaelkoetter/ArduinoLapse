@@ -22,19 +22,19 @@
 #define LCD_COLS 16
 #define LCD_ROWS 2
 
-ConfigValue<int> freeRam(0);
+ConfigValue freeRam(0);
 
-ConfigValue<int> triggerMode(0, 0, 1);
-ConfigValue<int> motorSpeed(100, 10, 400);
-ConfigValue<int> motorMicrosteps(2, 0, 8);
-ConfigValue<int> motorCurrent(1000, 100, 1200);
-ConfigValue<int> motorIdleCurrent(200, 0, 1200);
-ConfigValue<int> backlight(RED, RED, WHITE);
+ConfigValue triggerMode(0, 0, 1, PrintTriggerMode);
+ConfigValue motorSpeed(100, 10, 400);
+ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps);
+ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
+ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 
-ConfigValue<int> interval(10, 1, INT_MAX - 1);
-ConfigValue<int> stabilize(2, 0, 10);
-ConfigValue<int> numShots(100, 0, INT_MAX - 1);
-ConfigValue<int> movement(1000, 0, INT_MAX - 1);
+ConfigValue interval(10, 1, INT_MAX - 1, PrintTime);
+ConfigValue stabilize(2, 0, 10, PrintTime);
+ConfigValue numShots(100, 0, INT_MAX - 1);
+ConfigValue movement(1000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200,4,5,6, motorCurrent.Get());
@@ -58,28 +58,28 @@ void setup()
 	digitalWrite(7, HIGH);
 
 	usb.Init();
-
+	/*
 	stepper.setSpreadCycleChopper(2,24,8,6,0);
 	stepper.setRandomOffTime(0);
 	stepper.setStallGuardThreshold(4,0);
+	*/
+
 	stepper.start();
 
 	FlexiTimer2::set(1, 1.0 / 10000, on_timer);
 	FlexiTimer2::start();
 
-	menu.SetIdleScreen(new LabelMenuItem(F("Idle")));
-
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\4 Shots"), &numShots));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\4 Movement"), &movement, F(" steps")));
-	menu.AddMenuItem(new TimeConfigMenuItem		(F("\3 Interval"), &interval));
-	menu.AddMenuItem(new TimeConfigMenuItem		(F("\3 Stabilize"), &stabilize));
-	menu.AddMenuItem(new TriggerModeConfigMenuItem	(F("\2 Trigger Mode"), &triggerMode));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Mot.Speed"), &motorSpeed, F(" RPM")));
-	menu.AddMenuItem(new MicrostepsConfigMenuItem	(F("\2 Mot.Microsteps"), &motorMicrosteps));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 Mot.Current"), &motorCurrent, F(" mA")));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("\2 M.Idle Current"), &motorIdleCurrent, F(" mA")));
-	menu.AddMenuItem(new BacklightConfigMenuItem	(F("\2 Backlight"), &backlight));
-	menu.AddMenuItem(new ConfigMenuItem<int>	(F("i Free RAM"), &freeRam));
+	menu.AddMenuItem(new ConfigMenuItem(F("\4 Shots"), &numShots, 10));
+	menu.AddMenuItem(new ConfigMenuItem(F("\4 Movement"), &movement, 100));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Interval"), &interval));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Stabilize"), &stabilize));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 Trigger Mode"), &triggerMode));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Speed"), &motorSpeed, 10));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Microsteps"), &motorMicrosteps));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Current"), &motorCurrent, 50));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 M.Idle Current"), &motorIdleCurrent, 50));
+	menu.AddMenuItem(new ConfigMenuItem(F("\2 Backlight"), &backlight));
+	menu.AddMenuItem(new ConfigMenuItem(F("i Free RAM"), &freeRam));
 
 
 	lcd.setMCPType(LTI_TYPE_MCP23017);

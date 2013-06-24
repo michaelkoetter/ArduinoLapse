@@ -18,15 +18,11 @@
 #define CLOCK		(char)0x3
 #define CAMERA		(char)0x4
 
-#define TRIGGER_CABLE 0
-#define TRIGGER_PTP 1
-
-
-
 class MenuItem {
 friend class Menu;
 
 public:
+
 	virtual void Render(LCD& lcd, byte cols, byte rows) const = 0;
 	virtual void HandleButtons(byte buttons) {};
 
@@ -36,101 +32,27 @@ private:
 	MenuItem	*m_next, *m_prev;
 };
 
-class LabelMenuItem : public MenuItem {
-public:
-	LabelMenuItem(const __FlashStringHelper* label);
-	virtual void Render(LCD& lcd, byte cols, byte rows) const;
-
-protected:
-	virtual void RenderLabel(LCD& lcd, byte cols, byte rows) const;
-
-private:
-	const __FlashStringHelper	*m_label;
-};
-
-template<class T>
-class ConfigMenuItem : public LabelMenuItem {
+class ConfigMenuItem : public MenuItem {
 public:
 	ConfigMenuItem(const __FlashStringHelper* label,
-			ConfigValue<T>* value,
-			const __FlashStringHelper* unit = NULL)
-		: LabelMenuItem(label), m_value(value), m_unit(unit) {};
+			ConfigValue* value,
+			int step = 1)
+		: m_label(label), m_value(value), m_step(step) {};
 
-	virtual void Render(LCD& lcd, byte cols, byte rows) const {
-		LabelMenuItem::Render(lcd, cols, rows);
-		lcd.setCursor(2, 1);
-		RenderValue(lcd, cols - 4, rows);
-		RenderNav(lcd, cols, 1);
-	}
+	virtual void Render(LCD& lcd, byte cols, byte rows) const;
 
 	virtual void HandleButtons(byte buttons) {
 		if (buttons & BUTTON_LEFT) {
-			m_value->Modify(-1);
+			m_value->Modify(-m_step);
 		} else if (buttons & BUTTON_RIGHT) {
-			m_value->Modify(1);
+			m_value->Modify(m_step);
 		}
 	}
 
 protected:
-	virtual void RenderNav(LCD& lcd, byte cols, byte row) const {
-		T value = m_value->Get();
-		lcd.setCursor(0, row);
-		if (value > m_value->GetMin()) {
-			lcd.print(ARROW_LEFT);
-		} else {
-			lcd.print(F(" "));
-		}
-
-		lcd.setCursor(cols - 1, row);
-		if (value < m_value->GetMax()) {
-			lcd.print(ARROW_RIGHT);
-		} else {
-			lcd.print(F(" "));
-		}
-	}
-
-	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const {
-		size_t size = lcd.print(m_value->Get());
-		if (m_unit != NULL) {
-			size += lcd.print(m_unit);
-		}
-		Pad(lcd, cols, size);
-	}
-
-	const __FlashStringHelper		*m_unit;
-	ConfigValue<T>			*m_value;
-};
-
-class TimeConfigMenuItem : public ConfigMenuItem<int> {
-public:
-	TimeConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
-			: ConfigMenuItem<int>(label, value) {};
-protected:
-	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
-};
-
-class BacklightConfigMenuItem : public ConfigMenuItem<int> {
-public:
-	BacklightConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
-			: ConfigMenuItem<int>(label, value) {};
-protected:
-	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
-};
-
-class TriggerModeConfigMenuItem : public ConfigMenuItem<int> {
-public:
-	TriggerModeConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
-			: ConfigMenuItem<int>(label, value) {};
-protected:
-	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
-};
-
-class MicrostepsConfigMenuItem : public ConfigMenuItem<int> {
-public:
-	MicrostepsConfigMenuItem(const __FlashStringHelper* label, ConfigValue<int>* value)
-			: ConfigMenuItem<int>(label, value) {};
-protected:
-	virtual void RenderValue(LCD& lcd, byte cols, byte rows) const;
+	const __FlashStringHelper		*m_label;
+	ConfigValue						*m_value;
+	int								m_step;
 };
 
 class Menu {

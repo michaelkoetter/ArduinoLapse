@@ -65,92 +65,34 @@ void MenuItem::Pad(LCD& lcd, byte cols, size_t written) const {
 	}
 }
 
-LabelMenuItem::LabelMenuItem(const __FlashStringHelper* label)
-	: m_label(label)
-{
-}
-
-void LabelMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
-	lcd.setCursor(0, 0);
-	RenderLabel(lcd, cols, rows);
-}
-
-void LabelMenuItem::RenderLabel(LCD& lcd, byte cols, byte rows) const {
-	Pad(lcd, cols, lcd.print(m_label));
-}
-
-/**
- * Render user friendly time representation
- */
-void TimeConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
+void ConfigMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
 	size_t size = 0;
-	int remain = m_value->Get();
+	int value = m_value->Get();
 
-	// hours
-	int current = remain / 3600;
-	remain -= current * 3600;
-	size += lcd.print(current);
-	size += lcd.print(F("h "));
-
-	// minutes
-	current = remain / 60; //
-	remain -= current * 60;
-	size += lcd.print(current);
-	size += lcd.print(F("' "));
-
-	// seconds remain
-	size += lcd.print(remain);
-	size += lcd.print(F("\""));
-
+	// render label
+	lcd.setCursor(0, 0);
+	size = lcd.print(m_label);
 	Pad(lcd, cols, size);
-}
 
-void BacklightConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
-	switch(m_value->Get()) {
-	case OFF:
-		Pad(lcd, cols, lcd.print(F("Off")));
-		break;
-	case RED:
-		Pad(lcd, cols, lcd.print(F("Red")));
-		break;
-	case YELLOW:
-		Pad(lcd, cols, lcd.print(F("Yellow")));
-		break;
-	case GREEN:
-		Pad(lcd, cols, lcd.print(F("Green")));
-		break;
-	case TEAL:
-		Pad(lcd, cols, lcd.print(F("Teal")));
-		break;
-	case BLUE:
-		Pad(lcd, cols, lcd.print(F("Blue")));
-		break;
-	case VIOLET:
-		Pad(lcd, cols, lcd.print(F("Violet")));
-		break;
-	case WHITE:
-		Pad(lcd, cols, lcd.print(F("White")));
-		break;
-	default:
-		Pad(lcd, cols, lcd.print(F("Unknown")));
+	// render value
+	lcd.setCursor(2, 1);
+	size = m_value->PrintValue(lcd);
+	Pad(lcd, cols - 4, size);
+
+	// render navigation
+	lcd.setCursor(0, 1);
+	if (value > m_value->GetMin()) {
+		lcd.print(ARROW_LEFT);
+	} else {
+		lcd.print(F(" "));
 	}
-}
 
-void TriggerModeConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
-	switch(m_value->Get()) {
-	case TRIGGER_CABLE:
-		Pad(lcd, cols, lcd.print(F("Cbl. Release")));
-		break;
-	case TRIGGER_PTP:
-		Pad(lcd, cols, lcd.print(F("USB/PTP")));
-		break;
-	default:
-		Pad(lcd, cols, lcd.print(F("Unknown")));
+	lcd.setCursor(cols - 1, 1);
+	if (value < m_value->GetMax()) {
+		lcd.print(ARROW_RIGHT);
+	} else {
+		lcd.print(F(" "));
 	}
-}
-
-void MicrostepsConfigMenuItem::RenderValue(LCD& lcd, byte cols, byte rows) const {
-	Pad(lcd, cols, lcd.print(ipow(2, m_value->Get())));
 }
 
 Menu::Menu(LCD* lcd,
