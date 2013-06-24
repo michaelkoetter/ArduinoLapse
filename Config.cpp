@@ -2,6 +2,12 @@
 #include "LiquidTWI2.h"
 #include "utils.h"
 
+ConfigValue::ConfigValue(int defaultValue,
+		int min, int max, PrintFunction print)
+		: m_value(defaultValue), m_min(min), m_max(max), m_print(print)
+{
+}
+
 int ConfigValue::PrintValue(Print& print) {
 	if (m_print != NULL) {
 		return (*m_print)(m_value, print);

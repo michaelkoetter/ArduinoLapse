@@ -16,9 +16,7 @@ int PrintCurrent(int& value, Print& print);
 
 class ConfigValue {
 public:
-	ConfigValue(int defaultValue, int min = 0, int max = 0, PrintFunction print = NULL)
-		: m_value(defaultValue), m_min(min), m_max(max), m_print(print) {}
-
+	ConfigValue(int defaultValue, int min = 0, int max = 0, PrintFunction print = NULL);
 	void Modify(int amount);
 
 	int PrintValue(Print& print);
