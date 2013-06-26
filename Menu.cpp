@@ -86,8 +86,10 @@ void ConfigMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
 	} else {
 		lcd.print(F(" "));
 	}
+	lcd.print(F(" "));
 
-	lcd.setCursor(cols - 1, 1);
+	lcd.setCursor(cols - 2, 1);
+	lcd.print(F(" "));
 	if (value < m_value->GetMax()) {
 		lcd.print(ARROW_RIGHT);
 	} else {
@@ -95,12 +97,36 @@ void ConfigMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
 	}
 }
 
+void ActionMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
+	lcd.setCursor(0, 0);
+	Pad(lcd, cols, lcd.print(m_label));
+
+	lcd.setCursor(0, 1);
+	Pad(lcd, cols, lcd.print(m_prompt));
+}
+
+void ActionMenuItem::HandleButtons(byte buttons) {
+	if (buttons & BUTTON_SELECT) {
+		if (m_action != NULL) {
+			(*m_action)();
+		}
+	}
+}
+
+void InfoIdleScreen::Render(LCD& lcd, byte cols, byte rows) const {
+	lcd.setCursor(0, 0);
+	Pad(lcd, cols, lcd.print(F("Idle")));
+	lcd.setCursor(0, 1);
+	Pad(lcd, cols, 0);
+}
+
 Menu::Menu(LCD* lcd,
 		const byte cols,
 		const byte rows)
 	: m_lcd(lcd), m_rows(rows), m_cols(cols),
 	  m_head(NULL), m_tail(NULL), m_current(NULL), m_idle(NULL),
-	  m_currentButtons(0), m_fastForwardTimeout(1000), m_idleTimeout(5000)
+	  m_currentButtons(0), m_fastForwardTimeout(1000), m_idleTimeout(5000),
+	  m_mask(0xff)
 {
 }
 
@@ -112,6 +138,7 @@ void Menu::Init() {
 	CreateChar(CAMERA, camera);
 
 	m_lcd->clear();
+	GotoFirstItem();
 }
 
 void Menu::CreateChar(byte code, PGM_P character) {
@@ -127,7 +154,10 @@ void Menu::Render() {
 	if (now - m_buttonsChanged > m_idleTimeout
 			&& m_currentButtons == 0
 			&& m_idle != NULL) {
-		m_current = NULL;
+		ActivateIdleScreen();
+	}
+
+	if (m_idleActive && m_idle != NULL) {
 		m_idle->Render(*m_lcd, m_cols, m_rows);
 	} else if (m_current != NULL) {
 		m_current->Render(*m_lcd, m_cols, m_rows);
@@ -155,6 +185,16 @@ void Menu::SetIdleScreen(MenuItem* item) {
 	m_idle = item;
 }
 
+void Menu::ActivateIdleScreen(bool active) {
+	if (active) m_current = NULL;
+	m_idleActive = active;
+}
+
+void Menu::SetMask(byte mask) {
+	m_mask = mask;
+	GotoFirstItem();
+}
+
 void Menu::HandleNavigation() {
 	unsigned long now = millis();
 
@@ -166,19 +206,31 @@ void Menu::HandleNavigation() {
 	if (now - m_buttonsChanged > 1000 || buttons != m_currentButtons) {
 		m_currentButtons = buttons;
 		if (buttons & BUTTON_UP) {
-			if (m_current != NULL && m_current->m_prev != NULL) {
-				m_current = m_current->m_prev;
-			}
+			do {
+				if (m_current != NULL) {
+					m_current = m_current->m_prev;
+				}
+			} while (!(m_current->m_flag & m_mask));
 		} else if (buttons & BUTTON_DOWN) {
-			if (m_current != NULL && m_current->m_next != NULL) {
-				m_current = m_current->m_next;
-			}
+			do {
+				if (m_current != NULL) {
+					m_current = m_current->m_next;
+				}
+			} while (!(m_current->m_flag & m_mask));
 		}
 
+		if (buttons != 0) ActivateIdleScreen(false);
 		if (m_current == NULL) {
-			m_current = m_head;
+			GotoFirstItem();
 		} else {
 			m_current->HandleButtons(buttons);
 		}
+	}
+}
+
+void Menu::GotoFirstItem() {
+	m_current = m_head;
+	while (m_current != NULL && !(m_current->m_flag & m_mask)) {
+		m_current = m_current->m_next;
 	}
 }
