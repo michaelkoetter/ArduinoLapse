@@ -40,7 +40,7 @@ ConfigValue numShots(100, 0, INT_MAX - 1);
 ConfigValue movement(1000, 0, INT_MAX - 1);
 
 
-TMC26XStepper	stepper(200,4,5,6, motorCurrent.Get());
+TMC26XStepper	stepper(200, 44, 45, 46, motorCurrent.Get());
 USB				usb;
 Sequence		sequence(&usb, &stepper);
 LCD				lcd(MCP23017_ADDRESS);
@@ -66,8 +66,8 @@ void on_stop_sequence() {
 void setup()
 {
 	// Sparkfun USB Host Shield fix
-	pinMode(7, OUTPUT);
-	digitalWrite(7, HIGH);
+	pinMode(22, OUTPUT);
+	digitalWrite(22, HIGH);
 
 	usb.Init();
 	/*
@@ -103,7 +103,7 @@ void setup()
 	// info
 	menu.AddMenuItem(new ConfigMenuItem(F("i Free RAM"), &freeRam));
 
-	menu.SetIdleScreen(new InfoIdleScreen());
+//	menu.SetIdleScreen(new InfoIdleScreen());
 
 	lcd.setMCPType(LTI_TYPE_MCP23017);
 	lcd.begin(LCD_COLS, LCD_ROWS);

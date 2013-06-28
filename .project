@@ -74,7 +74,7 @@
 		<link>
 			<name>arduino/variant</name>
 			<type>2</type>
-			<locationURI>ArduinoPinPath/standard</locationURI>
+			<locationURI>ArduinoPinPath/mega</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>
