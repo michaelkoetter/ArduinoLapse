@@ -25,6 +25,13 @@
 #define FLAG_IDLE B1000000
 #define FLAG_RUNNING B0100000
 
+// I/O Pins
+#define PIN_TOS100_CS 4
+#define PIN_TOS100_DIR 5
+#define PIN_TOS100_STEP 6
+
+#define PIN_USB_FIX 7
+
 ConfigValue freeRam(0);
 
 ConfigValue triggerMode(0, 0, 1, PrintTriggerMode);
@@ -40,7 +47,9 @@ ConfigValue numShots(100, 0, INT_MAX - 1);
 ConfigValue movement(1000, 0, INT_MAX - 1);
 
 
-TMC26XStepper	stepper(200, 44, 45, 46, motorCurrent.Get());
+TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
+		PIN_TOS100_STEP, motorCurrent.Get());
+
 USB				usb;
 Sequence		sequence(&usb, &stepper);
 LCD				lcd(MCP23017_ADDRESS);
@@ -66,15 +75,10 @@ void on_stop_sequence() {
 void setup()
 {
 	// Sparkfun USB Host Shield fix
-	pinMode(22, OUTPUT);
-	digitalWrite(22, HIGH);
+	pinMode(PIN_USB_FIX, OUTPUT);
+	digitalWrite(PIN_USB_FIX, HIGH);
 
 	usb.Init();
-	/*
-	stepper.setSpreadCycleChopper(2,24,8,6,0);
-	stepper.setRandomOffTime(0);
-	stepper.setStallGuardThreshold(4,0);
-	*/
 
 	stepper.start();
 
