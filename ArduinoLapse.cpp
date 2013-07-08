@@ -51,24 +51,32 @@ TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
 		PIN_TOS100_STEP, motorCurrent.Get());
 
 USB				usb;
-Sequence		sequence(&usb, &stepper);
+
+Sequence		sequence(&usb, &stepper,
+		&numShots, &movement, &interval, &stabilize);
+
 LCD				lcd(MCP23017_ADDRESS);
 Menu			menu(&lcd, LCD_COLS, LCD_ROWS);
 
 void on_timer() {
 	if (!stepper.isMoving()) {
-		stepper.step(100);
+		stepper.setCurrent(motorIdleCurrent.Get());
+	} else {
+		stepper.setCurrent(motorCurrent.Get());
 	}
+
 	stepper.move();
 }
 
 void on_start_sequence() {
 	menu.SetMask(FLAG_RUNNING);
 	menu.ActivateIdleScreen();
+	sequence.Start();
 }
 
 void on_stop_sequence() {
 	menu.SetMask(FLAG_IDLE);
+	sequence.Stop();
 }
 
 //The setup function is called once at startup of the sketch

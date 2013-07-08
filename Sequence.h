@@ -7,6 +7,8 @@
 
 #include "TMC26XStepper.h"
 
+#include "Config.h"
+
 #define CAM_CONNECTED B1000000
 
 class Sequence : public PTPStateHandlers {
@@ -16,20 +18,34 @@ class Sequence : public PTPStateHandlers {
 
 	TMC26XStepper	*stepper;
 
-	unsigned long	lastTrigger;
+	int				m_shotsRemaining;
+    unsigned long	m_nextTrigger;
+    unsigned long 	m_nextMove;
+
+    ConfigValue		*m_interval;
+    ConfigValue		*m_stabilize;
+    ConfigValue		*m_shots;
+    ConfigValue		*m_movement;
+
 
 	void Trigger();
 
 public:
-    // interval in seconds
-    unsigned int	interval;
 
-    // number of shots
-    unsigned int	shots;
 
-    Sequence(USB *usb, TMC26XStepper *stepper);
+
+    Sequence(USB *usb, TMC26XStepper *stepper,
+    		ConfigValue *shots,
+    		ConfigValue *movement,
+    		ConfigValue *interval,
+    		ConfigValue *stabilize);
 
 	void Loop();
+
+	void Start();
+	void Stop() { m_shotsRemaining = 0; };
+
+	bool IsRunning() { return m_shotsRemaining > 0; }
 
 	// PTPStateHandlers
     virtual void OnDeviceDisconnectedState(PTP *ptp);
