@@ -49,6 +49,11 @@ public:
 
 	bool IsRunning() { return m_shotsRemaining > 0; }
 
+	int GetShotsRemaining() { return m_shotsRemaining; }
+	int GetShotsTotal() { return m_shots->Get(); }
+	int GetShotsFired() { return m_shots->Get() - m_shotsRemaining; }
+	int GetSecondsRemaining() { return m_interval->Get() * m_shotsRemaining; }
+
 	// PTPStateHandlers
     virtual void OnDeviceDisconnectedState(PTP *ptp);
     virtual void OnDeviceInitializedState(PTP *ptp);

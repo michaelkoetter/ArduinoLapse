@@ -113,11 +113,31 @@ void ActionMenuItem::HandleButtons(byte buttons) {
 	}
 }
 
+InfoIdleScreen::InfoIdleScreen(Sequence *sequence)
+	: m_sequence(sequence) {
+}
+
 void InfoIdleScreen::Render(LCD& lcd, byte cols, byte rows) const {
 	lcd.setCursor(0, 0);
-	Pad(lcd, cols, lcd.print(F("Idle")));
-	lcd.setCursor(0, 1);
-	Pad(lcd, cols, 0);
+	if (m_sequence->IsRunning()) {
+		int _chars = 0;
+		_chars += lcd.print(F("Shot "));
+		_chars += lcd.print(m_sequence->GetShotsFired());
+		_chars += lcd.print(F("/"));
+		_chars += lcd.print(m_sequence->GetShotsTotal());
+		Pad(lcd, cols, _chars);
+
+		_chars = 0;
+		lcd.setCursor(0, 1);
+		_chars += lcd.print(F("Rem. "));
+		int _secondsRemaining = m_sequence->GetSecondsRemaining();
+		_chars += PrintTime(_secondsRemaining, lcd);
+		Pad(lcd, cols, _chars);
+	} else {
+		Pad(lcd, cols, lcd.print(F("Idle")));
+		lcd.setCursor(0, 1);
+		Pad(lcd, cols, 0);
+	}
 }
 
 Menu::Menu(LCD* lcd,
@@ -153,7 +173,8 @@ void Menu::Render() {
 	unsigned long now = millis();
 	if (now - m_buttonsChanged > m_idleTimeout
 			&& m_currentButtons == 0
-			&& m_idle != NULL) {
+			&& m_idle != NULL
+			&& !m_idleActive) {
 		ActivateIdleScreen();
 	}
 
@@ -186,7 +207,12 @@ void Menu::SetIdleScreen(MenuItem* item) {
 }
 
 void Menu::ActivateIdleScreen(bool active) {
-	if (active) m_current = NULL;
+	if (active) {
+		m_current = NULL;
+	} else {
+		GotoFirstItem();
+	}
+
 	m_idleActive = active;
 }
 
@@ -205,26 +231,34 @@ void Menu::HandleNavigation() {
 
 	if (now - m_buttonsChanged > 1000 || buttons != m_currentButtons) {
 		m_currentButtons = buttons;
-		if (buttons & BUTTON_UP) {
-			do {
-				if (m_current != NULL) {
-					m_current = m_current->m_prev;
-				}
-			} while (!(m_current->m_flag & m_mask));
-		} else if (buttons & BUTTON_DOWN) {
-			do {
-				if (m_current != NULL) {
-					m_current = m_current->m_next;
-				}
-			} while (!(m_current->m_flag & m_mask));
+
+		if (buttons != 0) {
+			if (buttons & BUTTON_UP) {
+				do {
+					if (m_current != NULL) {
+						m_current = m_current->m_prev;
+					}
+				} while (!(m_current->m_flag & m_mask));
+			} else if (buttons & BUTTON_DOWN) {
+				do {
+					if (m_current != NULL) {
+						m_current = m_current->m_next;
+					}
+				} while (!(m_current->m_flag & m_mask));
+			}
+
+
+			if (m_current == NULL) {
+				GotoFirstItem();
+			} else {
+				m_current->HandleButtons(buttons);
+			}
+
+			if (m_idleActive) {
+				ActivateIdleScreen(false);
+			}
 		}
 
-		if (buttons != 0) ActivateIdleScreen(false);
-		if (m_current == NULL) {
-			GotoFirstItem();
-		} else {
-			m_current->HandleButtons(buttons);
-		}
 	}
 }
 

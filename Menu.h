@@ -9,6 +9,7 @@
 #include "LiquidTWI2.h"
 
 #include "Config.h"
+#include "Sequence.h"
 
 #define LCD LiquidTWI2
 
@@ -82,8 +83,11 @@ private:
 
 class InfoIdleScreen: public MenuItem {
 public:
-	InfoIdleScreen() {};
+	InfoIdleScreen(Sequence *sequence);
 	virtual void Render(LCD& lcd, byte cols, byte rows) const;
+
+private:
+	Sequence				*m_sequence;
 };
 
 class Menu {

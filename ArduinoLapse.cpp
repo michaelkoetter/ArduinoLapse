@@ -37,14 +37,14 @@ ConfigValue freeRam(0);
 ConfigValue triggerMode(0, 0, 1, PrintTriggerMode);
 ConfigValue motorSpeed(100, 10, 400);
 ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps);
-ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
-ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
+ConfigValue motorCurrent(1200, 100, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(500, 0, 1200, PrintCurrent);
 ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 
-ConfigValue interval(10, 1, INT_MAX - 1, PrintTime);
+ConfigValue interval(5, 1, INT_MAX - 1, PrintTime);
 ConfigValue stabilize(2, 0, 10, PrintTime);
 ConfigValue numShots(10, 0, INT_MAX - 1);
-ConfigValue movement(4000, 0, INT_MAX - 1);
+ConfigValue movement(16000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
@@ -107,7 +107,7 @@ void setup()
 	// info
 	menu.AddMenuItem(new ConfigMenuItem(F("i Free RAM"), &freeRam));
 
-//	menu.SetIdleScreen(new InfoIdleScreen());
+	menu.SetIdleScreen(new InfoIdleScreen(&sequence));
 
 	lcd.setMCPType(LTI_TYPE_MCP23017);
 	lcd.begin(LCD_COLS, LCD_ROWS);
