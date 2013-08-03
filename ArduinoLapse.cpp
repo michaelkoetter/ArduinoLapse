@@ -43,8 +43,8 @@ ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 
 ConfigValue interval(10, 1, INT_MAX - 1, PrintTime);
 ConfigValue stabilize(2, 0, 10, PrintTime);
-ConfigValue numShots(100, 0, INT_MAX - 1);
-ConfigValue movement(1000, 0, INT_MAX - 1);
+ConfigValue numShots(10, 0, INT_MAX - 1);
+ConfigValue movement(4000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
@@ -59,18 +59,12 @@ LCD				lcd(MCP23017_ADDRESS);
 Menu			menu(&lcd, LCD_COLS, LCD_ROWS);
 
 void on_timer() {
-	if (!stepper.isMoving()) {
-		stepper.setCurrent(motorIdleCurrent.Get());
-	} else {
-		stepper.setCurrent(motorCurrent.Get());
-	}
 
 	stepper.move();
 }
 
 void on_start_sequence() {
 	menu.SetMask(FLAG_RUNNING);
-	menu.ActivateIdleScreen();
 	sequence.Start();
 }
 
@@ -90,8 +84,6 @@ void setup()
 
 	stepper.start();
 
-	FlexiTimer2::set(1, 1.0 / 10000, on_timer);
-	FlexiTimer2::start();
 
 	menu.AddMenuItem(new ActionMenuItem(F("\3 Start Sequence"),
 			F("  [Press Select]"), on_start_sequence, FLAG_IDLE));
@@ -129,6 +121,9 @@ void setup()
 
 	menu.SetMask(FLAG_IDLE);
 	menu.Init();
+
+	FlexiTimer2::set(1, 1.0 / 10000, on_timer);
+	FlexiTimer2::start();
 }
 
 // The loop function is called in an endless loop
@@ -136,8 +131,12 @@ void loop()
 {
 	freeRam.Set(freeMemory());
 
+	if (!stepper.isMoving()) {
+		stepper.setCurrent(motorIdleCurrent.Get());
+	} else {
+		stepper.setCurrent(motorCurrent.Get());
+	}
 	stepper.setMicrosteps(ipow(2, motorMicrosteps.Get()));
-	stepper.setCurrent(motorCurrent.Get());
 	stepper.setSpeed(motorSpeed.Get());
 
 	usb.Task();

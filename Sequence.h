@@ -21,6 +21,8 @@ class Sequence : public PTPStateHandlers {
 	int				m_shotsRemaining;
     unsigned long	m_nextTrigger;
     unsigned long 	m_nextMove;
+    int				m_stepsPerMovement;
+    int				m_position;
 
     ConfigValue		*m_interval;
     ConfigValue		*m_stabilize;
