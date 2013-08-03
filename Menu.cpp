@@ -145,7 +145,7 @@ Menu::Menu(LCD* lcd,
 		const byte rows)
 	: m_lcd(lcd), m_rows(rows), m_cols(cols),
 	  m_head(NULL), m_tail(NULL), m_current(NULL), m_idle(NULL),
-	  m_currentButtons(0), m_fastForwardTimeout(1000), m_idleTimeout(5000),
+	  m_currentButtons(-1), m_fastForwardTimeout(1000), m_idleTimeout(5000),
 	  m_mask(0xff)
 {
 }
@@ -169,7 +169,6 @@ void Menu::CreateChar(byte code, PGM_P character) {
 }
 
 void Menu::Render() {
-	HandleNavigation();
 	unsigned long now = millis();
 	if (now - m_buttonsChanged > m_idleTimeout
 			&& m_currentButtons == 0
@@ -177,6 +176,8 @@ void Menu::Render() {
 			&& !m_idleActive) {
 		ActivateIdleScreen();
 	}
+
+	HandleNavigation();
 
 	if (m_idleActive && m_idle != NULL) {
 		m_idle->Render(*m_lcd, m_cols, m_rows);
@@ -209,8 +210,6 @@ void Menu::SetIdleScreen(MenuItem* item) {
 void Menu::ActivateIdleScreen(bool active) {
 	if (active) {
 		m_current = NULL;
-	} else {
-		GotoFirstItem();
 	}
 
 	m_idleActive = active;
@@ -225,11 +224,12 @@ void Menu::HandleNavigation() {
 	unsigned long now = millis();
 
 	byte buttons = m_lcd->readButtons();
-	if (buttons != m_currentButtons) {
-		m_buttonsChanged = now;
-	}
 
 	if (now - m_buttonsChanged > 1000 || buttons != m_currentButtons) {
+		if (buttons != m_currentButtons) {
+			m_buttonsChanged = now;
+		}
+
 		m_currentButtons = buttons;
 
 		if (buttons != 0) {
@@ -254,9 +254,7 @@ void Menu::HandleNavigation() {
 				m_current->HandleButtons(buttons);
 			}
 
-			if (m_idleActive) {
-				ActivateIdleScreen(false);
-			}
+			ActivateIdleScreen(false);
 		}
 
 	}

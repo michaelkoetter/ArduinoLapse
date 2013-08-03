@@ -16,7 +16,8 @@ Sequence::Sequence(USB *usb, TMC26XStepper *stepper,
 	  m_nextTrigger(0),
 	  m_shotsRemaining(0),
 	  m_position(0),
-	  m_stepsPerMovement(0)
+	  m_stepsPerMovement(0),
+	  m_startTime(0)
 {
 }
 
@@ -29,6 +30,7 @@ void Sequence::Trigger() {
 
 void Sequence::Start() {
 	unsigned long now = millis();
+	m_startTime = now;
 	m_shotsRemaining = m_shots->Get();
 
 	m_nextMove = now;

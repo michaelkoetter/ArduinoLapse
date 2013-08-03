@@ -21,6 +21,7 @@ class Sequence : public PTPStateHandlers {
 	int				m_shotsRemaining;
     unsigned long	m_nextTrigger;
     unsigned long 	m_nextMove;
+    unsigned long	m_startTime;
     int				m_stepsPerMovement;
     int				m_position;
 
@@ -52,7 +53,11 @@ public:
 	int GetShotsRemaining() { return m_shotsRemaining; }
 	int GetShotsTotal() { return m_shots->Get(); }
 	int GetShotsFired() { return m_shots->Get() - m_shotsRemaining; }
-	int GetSecondsRemaining() { return m_interval->Get() * m_shotsRemaining; }
+	int GetSecondsRemaining() {
+		unsigned long now = millis();
+		unsigned int elapsed = (now - m_startTime) / 1000;
+		return m_interval->Get() * GetShotsTotal() - elapsed;
+	}
 
 	// PTPStateHandlers
     virtual void OnDeviceDisconnectedState(PTP *ptp);

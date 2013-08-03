@@ -44,7 +44,7 @@ ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 ConfigValue interval(5, 1, INT_MAX - 1, PrintTime);
 ConfigValue stabilize(2, 0, 10, PrintTime);
 ConfigValue numShots(10, 0, INT_MAX - 1);
-ConfigValue movement(16000, 0, INT_MAX - 1);
+ConfigValue movement(14000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
