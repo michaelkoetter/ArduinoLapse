@@ -33,10 +33,10 @@ void Sequence::Start() {
 	m_startTime = now;
 	m_shotsRemaining = m_shots->Get();
 
-	m_nextMove = now;
-	m_nextTrigger = m_nextMove + (m_stabilize->Get() * 1000);
+	m_nextMove = now + (m_interval->Get() * 1000);
+	m_nextTrigger = now + (m_stabilize->Get() * 1000);
 
-	m_stepsPerMovement = m_movement->Get() / m_shots->Get();
+	m_stepsPerMovement = (m_movement->Get() / m_shots->Get());
 	m_position = 0;
 }
 
@@ -45,7 +45,7 @@ void Sequence::Loop() {
 	if (m_shotsRemaining > 0) {
 
 		if (now >= m_nextMove) {
-			m_nextMove = now + (m_interval->Get() * 1000);
+			m_nextMove += (m_interval->Get() * 1000);
 			stepper->step(m_stepsPerMovement);
 			m_position += m_stepsPerMovement;
 		}

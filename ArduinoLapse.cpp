@@ -34,17 +34,17 @@
 
 ConfigValue freeRam(0);
 
-ConfigValue triggerMode(0, 0, 1, PrintTriggerMode);
-ConfigValue motorSpeed(100, 10, 400);
+ConfigValue triggerMode(1, 0, 1, PrintTriggerMode);
+ConfigValue motorSpeed(50, 10, 400);
 ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps);
-ConfigValue motorCurrent(1200, 100, 1200, PrintCurrent);
-ConfigValue motorIdleCurrent(500, 0, 1200, PrintCurrent);
+ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
 ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 
 ConfigValue interval(5, 1, INT_MAX - 1, PrintTime);
 ConfigValue stabilize(2, 0, 10, PrintTime);
-ConfigValue numShots(10, 0, INT_MAX - 1);
-ConfigValue movement(14000, 0, INT_MAX - 1);
+ConfigValue numShots(20, 0, INT_MAX - 1);
+ConfigValue movement(15000, 0, INT_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
@@ -59,7 +59,6 @@ LCD				lcd(MCP23017_ADDRESS);
 Menu			menu(&lcd, LCD_COLS, LCD_ROWS);
 
 void on_timer() {
-
 	stepper.move();
 }
 
