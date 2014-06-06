@@ -6,33 +6,42 @@
 #define TRIGGER_CABLE 0
 #define TRIGGER_PTP 1
 
-typedef int (*PrintFunction) (int& value, Print& print);
+typedef int (*PrintFunction) (long& value, Print& print);
 
-int PrintTime(int& value, Print& print);
-int PrintBacklightColor(int& value, Print& print);
-int PrintTriggerMode(int& value, Print& print);
-int PrintMicrosteps(int& value, Print& print);
-int PrintCurrent(int& value, Print& print);
+// pretty print a time in seconds, minutes, hours
+int PrintTime(long& value, Print& print);
+
+// pretty print the backlight color
+int PrintBacklightColor(long& value, Print& print);
+
+// pretty print the trigger mode
+int PrintTriggerMode(long& value, Print& print);
+
+// translate microsteps 1,2,3,.. = 1,2,4,...
+int PrintMicrosteps(long& value, Print& print);
+
+// print current in milliamps  xxx mA
+int PrintCurrent(long& value, Print& print);
 
 class ConfigValue {
 public:
-	ConfigValue(int defaultValue, int min = 0, int max = 0, PrintFunction print = NULL);
-	void Modify(int amount);
+	ConfigValue(long defaultValue, long min = 0, long max = 0, PrintFunction print = NULL);
+	void Modify(long amount);
 
 	int PrintValue(Print& print);
 
-	int Get() const { return m_value; }
-	void Set(int value) { m_value = value; Modify(0); }
+	long Get() const { return m_value; }
+	void Set(long value) { m_value = value; Modify(0); }
 
 	int GetMin() const { return m_min; }
-	void SetMin(int min) { m_min = min; Modify(0); }
+	void SetMin(long min) { m_min = min; Modify(0); }
 
 	int GetMax() const { return m_max; }
-	void SetMax(int max) { m_max = max; Modify(0); }
+	void SetMax(long max) { m_max = max; Modify(0); }
 
 protected:
-	int		m_value;
-	int		m_min, m_max;
+	long		m_value;
+	long		m_min, m_max;
 	PrintFunction	m_print;
 };
 

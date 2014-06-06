@@ -106,10 +106,8 @@ void ActionMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
 }
 
 void ActionMenuItem::HandleButtons(byte buttons) {
-	if (buttons & BUTTON_SELECT) {
-		if (m_action != NULL) {
-			(*m_action)();
-		}
+	if (m_action != NULL) {
+		(*m_action)(buttons);
 	}
 }
 
@@ -130,7 +128,7 @@ void InfoIdleScreen::Render(LCD& lcd, byte cols, byte rows) const {
 		_chars = 0;
 		lcd.setCursor(0, 1);
 		_chars += lcd.print(F("Rem. "));
-		int _secondsRemaining = m_sequence->GetSecondsRemaining();
+		long _secondsRemaining = m_sequence->GetSecondsRemaining();
 		_chars += PrintTime(_secondsRemaining, lcd);
 		Pad(lcd, cols, _chars);
 	} else {

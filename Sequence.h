@@ -18,28 +18,27 @@ class Sequence : public PTPStateHandlers {
 
 	TMC26XStepper	*stepper;
 
-	int				m_shotsRemaining;
+	long			m_shotsRemaining;
     unsigned long	m_nextTrigger;
     unsigned long 	m_nextMove;
     unsigned long	m_startTime;
-    int				m_stepsPerMovement;
-    int				m_position;
+    long			m_stepsPerMovement;
+    long			m_position;
 
     ConfigValue		*m_interval;
     ConfigValue		*m_stabilize;
     ConfigValue		*m_shots;
     ConfigValue		*m_movement;
-
+    ConfigValue		*m_microsteps;
 
 	void Trigger();
 
 public:
 
-
-
     Sequence(USB *usb, TMC26XStepper *stepper,
     		ConfigValue *shots,
     		ConfigValue *movement,
+    		ConfigValue *microsteps,
     		ConfigValue *interval,
     		ConfigValue *stabilize);
 
@@ -53,9 +52,9 @@ public:
 	int GetShotsRemaining() { return m_shotsRemaining; }
 	int GetShotsTotal() { return m_shots->Get(); }
 	int GetShotsFired() { return m_shots->Get() - m_shotsRemaining; }
-	int GetSecondsRemaining() {
+	long GetSecondsRemaining() {
 		unsigned long now = millis();
-		unsigned int elapsed = (now - m_startTime) / 1000;
+		unsigned long elapsed = (now - m_startTime) / 1000;
 		return m_interval->Get() * GetShotsTotal() - elapsed;
 	}
 

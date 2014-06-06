@@ -13,11 +13,12 @@
 
 #define LCD LiquidTWI2
 
-#define ARROW_RIGHT (char)0x0
-#define ARROW_LEFT  (char)0x1
-#define WRENCH		(char)0x2
-#define CLOCK		(char)0x3
-#define CAMERA		(char)0x4
+#define ARROW_RIGHT (char)0x1
+#define ARROW_LEFT  (char)0x2
+
+#define WRENCH		(char)0x3
+#define CLOCK		(char)0x4
+#define CAMERA		(char)0x5
 
 
 class MenuItem {
@@ -61,7 +62,7 @@ protected:
 	int								m_step;
 };
 
-typedef void (*ActionFunction)(void);
+typedef void (*ActionFunction)(byte);
 
 class ActionMenuItem: public MenuItem {
 public:

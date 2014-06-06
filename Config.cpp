@@ -2,8 +2,8 @@
 #include "LiquidTWI2.h"
 #include "utils.h"
 
-ConfigValue::ConfigValue(int defaultValue,
-		int min, int max, PrintFunction print)
+ConfigValue::ConfigValue(long defaultValue,
+		long min, long max, PrintFunction print)
 		: m_value(defaultValue), m_min(min), m_max(max), m_print(print)
 {
 }
@@ -16,8 +16,8 @@ int ConfigValue::PrintValue(Print& print) {
 	return print.print(m_value);
 }
 
-void ConfigValue::Modify(int amount) {
-	int temp = m_value + amount;
+void ConfigValue::Modify(long amount) {
+	long temp = m_value + amount;
 	if (temp < m_min) temp = m_min;
 	if (m_max != 0 && temp > m_max) temp = m_max;
 	m_value = temp;
@@ -27,12 +27,12 @@ void ConfigValue::Modify(int amount) {
 /**
  * Render user friendly time representation
  */
-int PrintTime(int& value, Print& print) {
+int PrintTime(long& value, Print& print) {
 	size_t size = 0;
-	int remain = value;
+	long remain = value;
 
 	// hours
-	int current = remain / 3600;
+	long current = remain / 3600;
 	remain -= current * 3600;
 	size += print.print(current);
 	size += print.print(F("h "));
@@ -50,7 +50,7 @@ int PrintTime(int& value, Print& print) {
 	return size;
 }
 
-int PrintBacklightColor(int& value, Print& print) {
+int PrintBacklightColor(long& value, Print& print) {
 	switch(value) {
 	case OFF:
 		return print.print(F("Off"));
@@ -73,7 +73,7 @@ int PrintBacklightColor(int& value, Print& print) {
 	}
 }
 
-int PrintTriggerMode(int& value, Print& print) {
+int PrintTriggerMode(long& value, Print& print) {
 	switch(value) {
 	case TRIGGER_CABLE:
 		return print.print(F("Cbl. Release"));
@@ -84,11 +84,11 @@ int PrintTriggerMode(int& value, Print& print) {
 	}
 }
 
-int PrintMicrosteps(int& value, Print& print){
-	return print.print(ipow(2, value));
+int PrintMicrosteps(long& value, Print& print){
+	return print.print(ipow(2, (int)value));
 }
 
-int PrintCurrent(int& value, Print& print)  {
+int PrintCurrent(long& value, Print& print)  {
 	size_t size = print.print(value);
 	size += print.print(F(" mA"));
 }

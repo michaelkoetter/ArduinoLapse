@@ -35,16 +35,19 @@
 ConfigValue freeRam(0);
 
 ConfigValue triggerMode(1, 0, 1, PrintTriggerMode);
-ConfigValue motorSpeed(50, 10, 400);
+ConfigValue motorSpeed(200, 10, 400);
 ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps);
-ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
-ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
+ConfigValue motorCurrent(800, 100, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(400, 0, 1200, PrintCurrent);
 ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
 
-ConfigValue interval(5, 1, INT_MAX - 1, PrintTime);
-ConfigValue stabilize(2, 0, 10, PrintTime);
-ConfigValue numShots(20, 0, INT_MAX - 1);
-ConfigValue movement(15000, 0, INT_MAX - 1);
+ConfigValue interval(2, 1, LONG_MAX - 1, PrintTime);
+ConfigValue stabilize(1, 0, 10, PrintTime);
+ConfigValue numShots(300, 0, LONG_MAX - 1);
+
+// full slider length movement in "full step" mode
+// needs to be multiplied for microstepping
+ConfigValue movement(142500, 0, LONG_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
@@ -53,7 +56,7 @@ TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
 USB				usb;
 
 Sequence		sequence(&usb, &stepper,
-		&numShots, &movement, &interval, &stabilize);
+		&numShots, &movement, &motorMicrosteps, &interval, &stabilize);
 
 LCD				lcd(MCP23017_ADDRESS);
 Menu			menu(&lcd, LCD_COLS, LCD_ROWS);
@@ -62,14 +65,31 @@ void on_timer() {
 	stepper.move();
 }
 
-void on_start_sequence() {
-	menu.SetMask(FLAG_RUNNING);
-	sequence.Start();
+void on_start_sequence(byte buttons) {
+	if (buttons & BUTTON_SELECT) {
+		menu.SetMask(FLAG_RUNNING);
+		sequence.Start();
+	}
 }
 
-void on_stop_sequence() {
-	menu.SetMask(FLAG_IDLE);
-	sequence.Stop();
+void on_stop_sequence(byte buttons) {
+	if (buttons & BUTTON_SELECT) {
+		menu.SetMask(FLAG_IDLE);
+		sequence.Stop();
+	}
+}
+
+void on_move_slider(byte buttons) {
+	if (!stepper.isMoving()) {
+		long move = (movement.Get() / 1000)
+				* (ipow(2, (int)motorMicrosteps.Get()));
+
+		if (buttons & BUTTON_LEFT) {
+			stepper.step(-1 * move);
+		} else if (buttons & BUTTON_RIGHT) {
+			stepper.step(move);
+		}
+	}
 }
 
 //The setup function is called once at startup of the sketch
@@ -84,24 +104,26 @@ void setup()
 	stepper.start();
 
 
-	menu.AddMenuItem(new ActionMenuItem(F("\3 Start Sequence"),
+	menu.AddMenuItem(new ActionMenuItem(F("\4 Start Sequence"),
 			F("  [Press Select]"), on_start_sequence, FLAG_IDLE));
-	menu.AddMenuItem(new ActionMenuItem(F("\3 Stop Sequence"),
+	menu.AddMenuItem(new ActionMenuItem(F("\4 Stop Sequence"),
 			F("  [Press Select]"), on_stop_sequence, FLAG_RUNNING));
 
 	// settings
-	menu.AddMenuItem(new ConfigMenuItem(F("\4 Shots"), &numShots, 10, FLAG_IDLE));
-	menu.AddMenuItem(new ConfigMenuItem(F("\4 Movement"), &movement, 100, FLAG_IDLE));
-	menu.AddMenuItem(new ConfigMenuItem(F("\3 Interval"), &interval, 1, FLAG_IDLE));
-	menu.AddMenuItem(new ConfigMenuItem(F("\3 Stabilize"), &stabilize, 1, FLAG_IDLE));
+	menu.AddMenuItem(new ConfigMenuItem(F("\5 Shots"), &numShots, 10, FLAG_IDLE));
+	menu.AddMenuItem(new ConfigMenuItem(F("\5 Movement"), &movement, 500, FLAG_IDLE));
+	menu.AddMenuItem(new ConfigMenuItem(F("\4 Interval"), &interval, 1, FLAG_IDLE));
+	menu.AddMenuItem(new ConfigMenuItem(F("\4 Stabilize"), &stabilize, 1, FLAG_IDLE));
 
 	// config
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 Trigger Mode"), &triggerMode));
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Speed"), &motorSpeed, 10));
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Microsteps"), &motorMicrosteps));
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 Mot.Current"), &motorCurrent, 50));
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 M.Idle Current"), &motorIdleCurrent, 50));
-	menu.AddMenuItem(new ConfigMenuItem(F("\2 Backlight"), &backlight));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Trigger Mode"), &triggerMode));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Mot.Speed"), &motorSpeed, 10));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Mot.Microsteps"), &motorMicrosteps));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Mot.Current"), &motorCurrent, 50));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 M.Idle Current"), &motorIdleCurrent, 50));
+	menu.AddMenuItem(new ConfigMenuItem(F("\3 Backlight"), &backlight));
+	menu.AddMenuItem(new ActionMenuItem(F("\3 Move Slider"),
+			F("  [\2\1 Move]"), on_move_slider, FLAG_IDLE));
 
 	// info
 	menu.AddMenuItem(new ConfigMenuItem(F("i Free RAM"), &freeRam));
@@ -121,7 +143,7 @@ void setup()
 	menu.SetMask(FLAG_IDLE);
 	menu.Init();
 
-	FlexiTimer2::set(1, 1.0 / 10000, on_timer);
+	FlexiTimer2::set(1, 1.0 / 20000, on_timer);
 	FlexiTimer2::start();
 }
 
