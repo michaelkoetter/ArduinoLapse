@@ -36,10 +36,10 @@ public:
 	long Get() const { return m_value; }
 	void Set(long value) { m_value = value; Modify(0); }
 
-	int GetMin() const { return m_min; }
+	long GetMin() const { return m_min; }
 	void SetMin(long min) { m_min = min; Modify(0); }
 
-	int GetMax() const { return m_max; }
+	long GetMax() const { return m_max; }
 	void SetMax(long max) { m_max = max; Modify(0); }
 
 protected:
