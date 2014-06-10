@@ -36,10 +36,10 @@ ConfigValue freeRam(0);
 
 ConfigValue triggerMode(1, 0, 1, PrintTriggerMode);
 
-ConfigValue motorSpeed(150, 10, 400, NULL, on_change_motor_speed);
-ConfigValue motorMicrosteps(3, 0, 8, PrintMicrosteps, on_change_motor_microsteps);
+ConfigValue motorSpeed(250, 10, 400, NULL, on_change_motor_speed);
+ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps, on_change_motor_microsteps);
 ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
-ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(500, 0, 1200, PrintCurrent);
 ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor, on_change_backlight);
 
 ConfigValue interval(2, 1, LONG_MAX - 1, PrintTime);
@@ -48,7 +48,7 @@ ConfigValue numShots(300, 0, LONG_MAX - 1);
 
 // full slider length movement in "full step" mode
 // needs to be multiplied for microstepping
-ConfigValue movement(142500, 0, LONG_MAX - 1);
+ConfigValue movement(135000, 0, LONG_MAX - 1);
 
 
 TMC26XStepper	stepper(200, PIN_TOS100_CS, PIN_TOS100_DIR,
