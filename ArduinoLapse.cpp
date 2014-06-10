@@ -35,11 +35,12 @@
 ConfigValue freeRam(0);
 
 ConfigValue triggerMode(1, 0, 1, PrintTriggerMode);
-ConfigValue motorSpeed(200, 10, 400);
-ConfigValue motorMicrosteps(2, 0, 8, PrintMicrosteps);
-ConfigValue motorCurrent(800, 100, 1200, PrintCurrent);
-ConfigValue motorIdleCurrent(400, 0, 1200, PrintCurrent);
-ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor);
+
+ConfigValue motorSpeed(150, 10, 400, NULL, on_change_motor_speed);
+ConfigValue motorMicrosteps(3, 0, 8, PrintMicrosteps, on_change_motor_microsteps);
+ConfigValue motorCurrent(1000, 100, 1200, PrintCurrent);
+ConfigValue motorIdleCurrent(200, 0, 1200, PrintCurrent);
+ConfigValue backlight(RED, RED, WHITE, PrintBacklightColor, on_change_backlight);
 
 ConfigValue interval(2, 1, LONG_MAX - 1, PrintTime);
 ConfigValue stabilize(1, 0, 10, PrintTime);
@@ -61,6 +62,10 @@ Sequence		sequence(&usb, &stepper,
 LCD				lcd(MCP23017_ADDRESS);
 Menu			menu(&lcd, LCD_COLS, LCD_ROWS);
 
+unsigned long	slow_timing = 0;
+unsigned int 	current = 0;
+
+// 50kHz timer
 void on_timer() {
 	stepper.move();
 }
@@ -92,6 +97,18 @@ void on_move_slider(byte buttons) {
 	}
 }
 
+void on_change_motor_speed(long& value) {
+	stepper.setSpeed((int)value);
+}
+
+void on_change_motor_microsteps(long& value) {
+	stepper.setMicrosteps(ipow(2, (int)value));
+}
+
+void on_change_backlight(long& value) {
+	lcd.setBacklight((int)value);
+}
+
 //The setup function is called once at startup of the sketch
 void setup()
 {
@@ -102,16 +119,17 @@ void setup()
 	usb.Init();
 
 	stepper.start();
-
+	stepper.setMicrosteps(ipow(2, motorMicrosteps.Get()));
+	stepper.setSpeed(motorSpeed.Get());
 
 	menu.AddMenuItem(new ActionMenuItem(F("\4 Start Sequence"),
-			F("  [Press Select]"), on_start_sequence, FLAG_IDLE));
+			F("  [Select]"), on_start_sequence, FLAG_IDLE));
 	menu.AddMenuItem(new ActionMenuItem(F("\4 Stop Sequence"),
-			F("  [Press Select]"), on_stop_sequence, FLAG_RUNNING));
+			F("  [Select]"), on_stop_sequence, FLAG_RUNNING));
 
 	// settings
 	menu.AddMenuItem(new ConfigMenuItem(F("\5 Shots"), &numShots, 10, FLAG_IDLE));
-	menu.AddMenuItem(new ConfigMenuItem(F("\5 Movement"), &movement, 500, FLAG_IDLE));
+	menu.AddMenuItem(new ConfigMenuItem(F("\5 Sl.Movement"), &movement, 500, FLAG_IDLE));
 	menu.AddMenuItem(new ConfigMenuItem(F("\4 Interval"), &interval, 1, FLAG_IDLE));
 	menu.AddMenuItem(new ConfigMenuItem(F("\4 Stabilize"), &stabilize, 1, FLAG_IDLE));
 
@@ -143,27 +161,39 @@ void setup()
 	menu.SetMask(FLAG_IDLE);
 	menu.Init();
 
-	FlexiTimer2::set(1, 1.0 / 20000, on_timer);
+	// 50kHz timer
+	FlexiTimer2::set(1, 1.0 / 50000, on_timer);
 	FlexiTimer2::start();
+}
+
+// executed approximately every 100ms
+void slow_loop() {
+	freeRam.Set(freeMemory());
+	menu.Render();
 }
 
 // The loop function is called in an endless loop
 void loop()
 {
-	freeRam.Set(freeMemory());
-
+	unsigned int desired_current = 0;
 	if (!stepper.isMoving()) {
-		stepper.setCurrent(motorIdleCurrent.Get());
+		desired_current = (int)motorIdleCurrent.Get();
 	} else {
-		stepper.setCurrent(motorCurrent.Get());
+		desired_current = (int)motorCurrent.Get();
 	}
-	stepper.setMicrosteps(ipow(2, motorMicrosteps.Get()));
-	stepper.setSpeed(motorSpeed.Get());
+
+	if (current != desired_current) {
+		stepper.setCurrent(desired_current);
+		current = desired_current;
+	}
+
+	unsigned long now = millis();
+	if (now - slow_timing > 100) {
+		slow_timing = now;
+		slow_loop();
+	}
 
 	usb.Task();
 	sequence.Loop();
-
-	menu.Render();
-
-	lcd.setBacklight(backlight.Get());
 }
+

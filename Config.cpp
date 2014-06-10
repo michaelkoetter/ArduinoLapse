@@ -3,8 +3,8 @@
 #include "utils.h"
 
 ConfigValue::ConfigValue(long defaultValue,
-		long min, long max, PrintFunction print)
-		: m_value(defaultValue), m_min(min), m_max(max), m_print(print)
+		long min, long max, PrintFunction print, OnChange onChange)
+		: m_value(defaultValue), m_min(min), m_max(max), m_print(print), m_change(onChange)
 {
 }
 
@@ -21,6 +21,9 @@ void ConfigValue::Modify(long amount) {
 	if (temp < m_min) temp = m_min;
 	if (m_max != 0 && temp > m_max) temp = m_max;
 	m_value = temp;
+	if (m_change != NULL) {
+		m_change(m_value);
+	}
 }
 
 

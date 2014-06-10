@@ -67,7 +67,7 @@ void MenuItem::Pad(LCD& lcd, byte cols, size_t written) const {
 
 void ConfigMenuItem::Render(LCD& lcd, byte cols, byte rows) const {
 	size_t size = 0;
-	int value = m_value->Get();
+	long value = m_value->Get();
 
 	// render label
 	lcd.setCursor(0, 0);
@@ -172,7 +172,10 @@ void Menu::Render() {
 			&& m_currentButtons == 0
 			&& m_idle != NULL
 			&& !m_idleActive) {
-		ActivateIdleScreen();
+		// no button pressed
+		// idle timeout exceeded -> activate idle
+		m_idleActive = true;
+		m_current = NULL;
 	}
 
 	HandleNavigation();
@@ -205,14 +208,6 @@ void Menu::SetIdleScreen(MenuItem* item) {
 	m_idle = item;
 }
 
-void Menu::ActivateIdleScreen(bool active) {
-	if (active) {
-		m_current = NULL;
-	}
-
-	m_idleActive = active;
-}
-
 void Menu::SetMask(byte mask) {
 	m_mask = mask;
 	GotoFirstItem();
@@ -231,7 +226,10 @@ void Menu::HandleNavigation() {
 		m_currentButtons = buttons;
 
 		if (buttons != 0) {
-			if (buttons & BUTTON_UP) {
+			if (m_idleActive) {
+				// button pressed, deactivate idle screen
+				m_idleActive = false;
+			} else if (buttons & BUTTON_UP) {
 				do {
 					if (m_current != NULL) {
 						m_current = m_current->m_prev;
@@ -251,8 +249,6 @@ void Menu::HandleNavigation() {
 			} else {
 				m_current->HandleButtons(buttons);
 			}
-
-			ActivateIdleScreen(false);
 		}
 
 	}

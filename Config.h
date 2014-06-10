@@ -7,6 +7,7 @@
 #define TRIGGER_PTP 1
 
 typedef int (*PrintFunction) (long& value, Print& print);
+typedef void (*OnChange) (long& newValue);
 
 // pretty print a time in seconds, minutes, hours
 int PrintTime(long& value, Print& print);
@@ -25,7 +26,9 @@ int PrintCurrent(long& value, Print& print);
 
 class ConfigValue {
 public:
-	ConfigValue(long defaultValue, long min = 0, long max = 0, PrintFunction print = NULL);
+	ConfigValue(long defaultValue, long min = 0, long max = 0,
+			PrintFunction print = NULL,
+			OnChange onChange = NULL);
 	void Modify(long amount);
 
 	int PrintValue(Print& print);
@@ -43,6 +46,7 @@ protected:
 	long		m_value;
 	long		m_min, m_max;
 	PrintFunction	m_print;
+	OnChange		m_change;
 };
 
 #endif /* CONFIG_H_ */
